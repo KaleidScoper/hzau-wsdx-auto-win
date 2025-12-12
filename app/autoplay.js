@@ -403,12 +403,43 @@ async function loginAndPlay() {
     args: [
       '--disable-features=IsolateOrigins,site-per-process',
       '--mute-audio', // 浏览器静音
+      '--disable-blink-features=AutomationControlled', // 隐藏自动化控制特征
     ],
   });
   const context = await browser.newContext({
     viewport: { width: 1366, height: 768 },
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    locale: 'zh-CN',
+    timezoneId: 'Asia/Shanghai',
+    permissions: ['geolocation'],
+    extraHTTPHeaders: {
+      'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    },
   });
   const page = await context.newPage();
+  
+  // 隐藏自动化特征
+  await page.addInitScript(() => {
+    // 删除 webdriver 特征
+    Object.defineProperty(navigator, 'webdriver', {
+      get: () => false,
+    });
+    
+    // 伪装 Chrome 对象
+    window.chrome = {
+      runtime: {},
+    };
+    
+    // 伪装插件（避免被检测为无插件浏览器）
+    Object.defineProperty(navigator, 'plugins', {
+      get: () => [1, 2, 3, 4, 5],
+    });
+    
+    // 伪装语言
+    Object.defineProperty(navigator, 'languages', {
+      get: () => ['zh-CN', 'zh', 'en'],
+    });
+  });
 
   // 登录
   await page.goto(loginUrl, { waitUntil: 'networkidle' });
