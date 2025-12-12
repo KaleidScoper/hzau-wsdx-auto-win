@@ -96,12 +96,58 @@ node app/autoplay.js
 
 ### 脚本工作原理
 
-#### 1. 登录流程
+#### 1. 浏览器初始化与自动化特征伪装
+
+**隐藏自动化标识：**
+```javascript
+// 启动参数
+args: [
+  '--disable-blink-features=AutomationControlled', // 隐藏自动化控制特征
+  '--mute-audio', // 浏览器静音
+]
+
+// 浏览器上下文配置
+userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ...', // 真实 User-Agent
+locale: 'zh-CN', // 中文环境
+timezoneId: 'Asia/Shanghai', // 时区设置
+permissions: ['geolocation'], // 地理位置权限
+```
+
+**注入脚本隐藏特征：**
+```javascript
+// 删除 webdriver 特征（最关键的伪装）
+Object.defineProperty(navigator, 'webdriver', {
+  get: () => false, // 伪装为 false，隐藏自动化身份
+});
+
+// 伪装 Chrome 对象
+window.chrome = {
+  runtime: {},
+};
+
+// 伪装浏览器插件（避免被检测为无插件浏览器）
+Object.defineProperty(navigator, 'plugins', {
+  get: () => [1, 2, 3, 4, 5],
+});
+
+// 伪装语言设置
+Object.defineProperty(navigator, 'languages', {
+  get: () => ['zh-CN', 'zh', 'en'],
+});
+```
+
+**伪装目的：**
+- 隐藏 `navigator.webdriver = true` 特征（自动化浏览器的主要标识）
+- 模拟真实浏览器的环境特征
+- 降低被网站检测为自动化工具的风险
+- 使用有头模式（`headless: false`）进一步降低检测风险
+
+#### 2. 登录流程
 ```javascript
 1. 访问登录页面 → 2. 填写账号密码 → 3. 截图验证码 → 4. 用户输入验证码 → 5. 提交登录
 ```
 
-#### 2. 反挂机绕过机制
+#### 3. 反挂机绕过机制
 
 **页面可见性伪装：**
 ```javascript
@@ -137,7 +183,7 @@ window.player.on('ratechange', () => {
 - 如果视频被暂停，自动恢复播放
 - 不修改心跳上报，保持后端计时正常
 
-#### 3. 分集检测逻辑
+#### 4. 分集检测逻辑
 
 **自动提取分集列表：**
 ```javascript
@@ -177,7 +223,7 @@ const isCompleted = hasInlineRedStyle ||      // 内联红色样式（最可靠�
                    hasCompletedText;          // 包含"完成"文字
 ```
 
-#### 4. 播放流程
+#### 5. 播放流程
 
 **单个视频：**
 ```
@@ -189,7 +235,7 @@ const isCompleted = hasInlineRedStyle ||      // 内联红色样式（最可靠�
 访问主页面 → 提取所有分集 → 过滤未完成分集 → 依次播放未完成分集 → 每个分集播放完成后切换下一个
 ```
 
-#### 5. 状态监控
+#### 6. 状态监控
 
 **实时播放状态显示：**
 - 每 3 秒更新一次播放进度
@@ -229,4 +275,4 @@ const isCompleted = hasInlineRedStyle ||      // 内联红色样式（最可靠�
    - 如果华农更新网站或者雇了更好的外包（比如我），脚本可能需要调整
 
 3. **可能存在未知检测方法**
-   - 如果华农设法检测了 Playwright 调试环境，脚本可能无法使用或者使你遭受处分
+   - 如果华农设法检测了 Playwright 调试环境，脚本可能无法使用或者使你喜提处分
