@@ -1,0 +1,32 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 抓取的网站内容（不包含在仓库中）
+app/download/
+wsdx.hzau.edu.cn/
+
+# 抓取脚本（非核心功能）
+app/crawl.js
+
+# 用户配置（已经不再包含敏感信息）
+# app/video-list.txt
+
+# 系统文件
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# 日志文件
+*.log
+
