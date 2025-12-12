@@ -7,7 +7,7 @@ const loginUrl = 'https://wsdx.hzau.edu.cn/login/#/login';
 const username = '你的账户';
 const password = '你的密码';
 const refererUrl = 'https://wsdx.hzau.edu.cn/ybdy/lesson/video?lesson_id=808';
-const downloadDir = path.join(__dirname, 'download');
+const captchaPath = path.join(__dirname, 'captcha.png');
 const videoListFile = path.join(__dirname, 'video-list.txt');
 
 // 读取视频列表
@@ -54,11 +54,9 @@ async function saveCaptcha(page) {
   try {
     const captchaEl = await page.$('img.login_piccheck_img');
     if (!captchaEl) return null;
-    fs.mkdirSync(downloadDir, { recursive: true });
-    const filePath = path.join(downloadDir, 'captcha.png');
-    await captchaEl.screenshot({ path: filePath });
-    console.log(`验证码已保存: ${filePath}`);
-    return filePath;
+    await captchaEl.screenshot({ path: captchaPath });
+    console.log(`验证码已保存: ${captchaPath}`);
+    return captchaPath;
   } catch (e) {
     return null;
   }
